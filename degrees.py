@@ -5,12 +5,16 @@ from util import Node, StackFrontier, QueueFrontier
 
 # Maps names to a set of corresponding person_ids
 names = {}
+# names = {'kisha morales': {'11077519'}}
 
 # Maps person_ids to a dictionary of: name, birth, movies (a set of movie_ids)
 people = {}
+# people = {'11077519': {'name': 'Kisha Morales', 'birth': '', 'movies': set()}}
 
 # Maps movie_ids to a dictionary of: title, year, stars (a set of person_ids)
 movies = {}
+# movies = {'11171390': {'title': 'Kakol-zari', 'year': '1972', 'stars': {'7885560', '5095201', '1164771', '1028434', '1289559'}}}
+
 
 
 def load_data(directory):
@@ -89,10 +93,57 @@ def shortest_path(source, target):
     Returns the shortest list of (movie_id, person_id) pairs
     that connect the source to the target.
 
+    Shorthest paths between person with id source and person with id target
+
+    Assuming there is a path from the source to the target, your function should return a list,
+    where each list item is the next (movie_id, person_id) pair in the path from the source to the target. 
+    Each pair should be a tuple of two strings.
+
+    For example, if the return value of shortest_path were [(1, 2), (3, 4)], 
+    that would mean that the source starred in movie 1 with person 2, 
+    person 2 starred in movie 3 with person 4, and person 4 is the target.
+
+    If there are multiple paths of minimum length from the source to the target, 
+    your function can return any of them.
+    If there is no possible path between two actors, your function should return None.
+    
+    You may call the neighbors_for_person function, which accepts a person's id as input, and returns a set of (movie_id, person_id) pairs for all people who starred in a movie with a given person.
+
     If no possible path, returns None.
     """
 
-    # TODO
+    searchedItems = set()
+    frontier = QueueFrontier()
+    initialState = source
+
+    frontier.add(Node(state=initialState,parent=None,action=None))
+
+    while not frontier.empty():
+        node = frontier.remove()
+        if frontier.contains_state(target):
+            solution = []
+            
+            for node in frontier.frontier:
+                if node.state == target:
+                    print(f'target:{node.state}')
+                    while node.parent is not None:
+                        pair = (node.action,node.state) 
+                        solution.append(pair)          
+                        node = node.parent
+                    solution.reverse()
+                    break
+            
+            return solution
+        else:
+            moviesWhereStatePlayed = people.get(node.state)['movies']
+            for movie in moviesWhereStatePlayed:
+                peopleWhoPlayedInMovies = movies.get(movie)['stars']
+                for person in peopleWhoPlayedInMovies:
+                    newnode = Node(state=person,parent=node,action=movie)
+                    if newnode.state not in searchedItems:
+                        frontier.add(newnode)
+            searchedItems.add(node.state)
+
     raise NotImplementedError
 
 
